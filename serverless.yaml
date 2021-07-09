@@ -1,0 +1,52 @@
+service: FastAPI-Lambda-Function
+
+package:
+  individually: true
+
+provider:
+  name: aws
+  profile: ${opt:aws-profile, "default"}
+  region: ${opt:region}
+  stage: ${opt:stage, "dev"}
+  runtime: python3.8
+  memorySize: 128
+  timeout: 30
+  iam:
+    role: ${opt:iamrole}
+
+plugins:
+  - serverless-python-requirements
+
+custom:
+  pythonRequirements:
+    dockerizePip: true
+    layer:
+      name: FastAPI-Lambda-Function
+      path: .
+      description: FastAPI-Lambda-Function Layer
+      compatibleRuntimes:
+        - python3.8
+
+functions:
+  app:
+    package:
+      patterns:
+        - 'src/**'
+        - '!requirements.txt'
+        - '!package.json'
+        - '!package-lock.json'
+        - '!.serverless/**'
+        - '!venv/**'
+        - '!node_modules/**'
+    handler: main.handler
+    environment:
+      STAGE: ${self:provider.stage}
+    layers:
+      - { Ref: PythonRequirementsLambdaLayer }
+    events:
+      - http:
+          method: get
+          path: /
+      - http:
+          method: any
+          path: /{proxy+}
