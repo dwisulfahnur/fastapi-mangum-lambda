@@ -1,0 +1,6 @@
+.DS_STORE
+.vscode
+.serverless
+***__pycache__**
+venv
+node_modules
